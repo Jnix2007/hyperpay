@@ -2,38 +2,42 @@
 
 ![HyperPay](./hyperpay.png)
 
-**The first x402 payment facilitator for HyperEVM**, enabling API monetization on any EVM-compatible chain.
+**HyperPay is the first x402 payment facilitator for HyperEVM**, enabling API services and content providers to monetize their offerings and receive onchain payments on HyperEVM
 
-Built for the HyperEVM Hackathon hosted by Looping Collective & StakingRewards at Devconnect Buenos Aires, November 2025.
+**built for the HyperEVM Hackathon hosted by Looping Collective & StakingRewards at Devconnect Buenos Aires, November 2025**
 
 ## what is HyperPay?
 
-HyperPay is a self-hosted x402 facilitator that brings the x402 payment protocol to HyperEVM, starting on testnet but easily configurable for mainnet. It enables API providers to accept USDC payments on HyperEVM using the same dead-simple integration other facilitators provide on chains like Solana and Base.
+HyperPay is a self-hosted x402 facilitator that brings the x402 payment protocol to HyperEVM, starting on testnet but easily configurable for mainnet
+
+it enables API providers to accept USDC payments on HyperEVM using the same dead-simple integration other facilitators provide on chains like Solana and Base
 
 ### features
 
-✅ **EIP-3009 compatible** - Gasless payments using `transferWithAuthorization`  
-✅ **CDP Server Wallets** - Secure key management and automatic nonce & retry handling 
-✅ **Standard x402 protocol** - Works with existing x402 client libraries  
-✅ **Production-ready** - Full verification and settlement logic  
-✅ **Open source** - Template for adding x402 to any EVM chain  
+✅ **EIP-3009 compatible** - gasless payments using `transferWithAuthorization`  
+✅ **CDP Server Wallets** - secure key management and automatic nonce & retry handling 
+✅ **standard x402 protocol** - works with existing x402 client libraries  
+✅ **production-ready** - full verification and settlement logic  
+✅ **open source** - template for adding x402 to any EVM chain  
 
 ## high-level architecture
 
-My core contribution here is the x402 Facilitator for HyperEVM. **Along with the facilitator, I've included an end-to-end, full-stack demo showcasing HyperEVM x402 payments in action**:
+my core contribution here is the x402 Facilitator for HyperEVM
 
-- Web app lets the user sign in, get a CDP Embedded Wallet, and faucet USDC on HyperEVM testnet
-- The user can one-click call a simple x402-enabled API running in the backend, which is x402-enabled using HyperPay's facilitator on HyperEVM
-- The API will respond with 402 payment required, directing the user to pay $0.01 USDC on HyperEVM testnet to access its services
-- The client wallet signs and retries using the X-PAYMENT header the x402 protocol expects
-- The API server calls HyperPay's facilitator to verify and settle payment on HyperEVM
-- With payment complete, the API provides the requested service/content to the user
+**along with the facilitator, I've included an end-to-end, full-stack demo showcasing HyperEVM x402 payments in action**:
+
+- web app lets the user sign in, get a CDP Embedded Wallet, and faucet USDC on HyperEVM testnet
+- the user can one-click call a simple x402-enabled API running in the backend, which is x402-enabled using HyperPay's facilitator on HyperEVM
+- the API will respond with 402 payment required, directing the user to pay $0.01 USDC on HyperEVM testnet to access its services
+- the client wallet signs and retries using the X-PAYMENT header the x402 protocol expects
+- the API server calls HyperPay's facilitator to verify and settle payment on HyperEVM
+- with payment complete, the API provides the requested service/content to the user
 
 
 ```
 ┌──────────────┐         ┌──────────────┐         ┌──────────────┐
-│    Client    │         │   Demo API   │         │   HyperPay   │
-│              │◄───────►│              │◄───────►│ (Facilitator)│
+│    client    │         │   demo API   │         │   HyperPay   │
+│              │◄───────►│              │◄───────►│ (facilitator)│
 └──────────────┘         └──────────────┘         └──────────────┘
                                                           │
                                                           ▼
@@ -45,7 +49,7 @@ My core contribution here is the x402 Facilitator for HyperEVM. **Along with the
                                                           ▼
                                                    ┌──────────────┐
                                                    │  HyperEVM    │
-                                                   │   Testnet    │
+                                                   │   testnet    │
                                                    └──────────────┘
 ```
 
@@ -54,21 +58,21 @@ My core contribution here is the x402 Facilitator for HyperEVM. **Along with the
 ```
 hyperpay/
 ├── packages/
-│   └── hyperpay-facilitator/    # The facilitator implementation
+│   └── hyperpay-facilitator/    # facilitator implementation
 │       ├── src/
-│       │   ├── server.ts        # Express server with /verify & /settle
-│       │   ├── verify.ts        # Payment verification logic
-│       │   ├── settle.ts        # Settlement via CDP Server Wallets
+│       │   ├── server.ts        # express server with /verify & /settle
+│       │   ├── verify.ts        # payment verification logic
+│       │   ├── settle.ts        # settlement via CDP Server Wallets
 │       │   ├── config.ts        # HyperEVM & USDC configuration
 │       │   ├── types.ts         # TypeScript interfaces
-│       │   └── index.ts         # Export facilitator instance
+│       │   └── index.ts         # exports facilitator instance
 │       └── package.json
 └── demo/
-    ├── server/                   # Demo API using HyperPay
-    │   ├── index.js             # Express API with x402 middleware
+    ├── server/                   # demo API using HyperPay
+    │   ├── index.js             # express API with x402 middleware
     │   └── package.json
-    └── client/                   # Web app
-        ├── app/                 # Next.js app with CDP Embedded Wallet
+    └── client/                   # web app
+        ├── app/                 # next.js app with CDP Embedded Wallet
         └── package.json
 ```
 
@@ -180,8 +184,8 @@ app.use(paymentMiddleware(
 ### for users & agents
 
 1. sign in with CDP Embedded Wallet (email/SMS/Google/X)
-2. get testnet USDC from Circle's faucet
-3. call paid APIs - payment happens *automatically*
+2. get HyperEVM testnet USDC from Circle's faucet
+3. call paid APIs, paying via x402
 
 ## tech details
 
@@ -217,12 +221,12 @@ app.use(paymentMiddleware(
 **for HyperEVM:**
 - enables API monetization on HyperEVM
 - showcases EVM compatibility
+- drives HYPE usage
 - attracts developers building paid services
 
 **for CDP:**
-- demonstrates Server Wallets on new chains
+- demonstrates Server Wallets on HyperEVM
 - shows Embedded Wallet flexibility
-- expands x402 reach
 
 ## deployment
 
