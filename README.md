@@ -183,7 +183,7 @@ app.use(paymentMiddleware(
 
 ### for users & agents
 
-1. sign in with CDP Embedded Wallet (email/SMS/Google/X)
+1. sign in (supports various web2-friendly auth methods), get a CDP Embedded Wallet under the hood
 2. get HyperEVM testnet USDC from Circle's faucet
 3. call paid APIs, paying via x402
 
