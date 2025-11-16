@@ -17,7 +17,7 @@ import { wrapFetchWithPayment, decodeXPaymentResponse } from "x402-fetch";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3003";
 
-// HyperEVM Testnet configuration
+// HyperEVM testnet config
 const hyperEvmTestnet = {
   id: 998,
   name: "HyperEVM Testnet",
@@ -68,7 +68,6 @@ export default function Home() {
   const [otp, setOtp] = useState("");
   const [flowId, setFlowId] = useState("");
   const [authType, setAuthType] = useState<"email" | "sms">("email");
-  const [faucetSuccess, setFaucetSuccess] = useState<string>("");
 
   const address = currentUser?.evmAccounts?.[0];
 
@@ -180,46 +179,6 @@ export default function Home() {
     }
   };
 
-  // Faucet USDC using backend endpoint
-  const handleFaucet = async () => {
-    if (!address) return;
-    
-    setLoading(true);
-    setError("");
-    setFaucetSuccess("");
-    
-    try {
-      const response = await fetch(`${API_URL}/faucet`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          address: address,
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || "Faucet request failed");
-      }
-      
-      setFaucetSuccess(data.transactionHash);
-      
-      // refresh balance multiple times to catch the update
-      setTimeout(fetchBalance, 2000);
-      setTimeout(fetchBalance, 5000);
-      setTimeout(fetchBalance, 10000);
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "failed to request faucet funds");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // call the x402-enabled API endpoint
   const handleCallApi = async () => {
     if (!address || !currentUser) return;
@@ -278,8 +237,8 @@ export default function Home() {
   return (
     <div className="container">
       <div className="header">
-        <h1>x402 demo</h1>
-        <p>monetize APIs with crypto - simple and instant</p>
+        <h1>HyperPay demo</h1>
+        <p>showcasing the first x402 facilitator for HyperEVM</p>
       </div>
 
       <div className="wallet-section">
@@ -378,7 +337,7 @@ export default function Home() {
                   onClick={() => { setAuthStep("method"); setEmailOrPhone(""); }}
                   disabled={loading}
                 >
-                  Back
+                  back
                 </button>
               </div>
             ) : (
@@ -432,42 +391,52 @@ export default function Home() {
         <>
           <div className="action-section">
             <h2 style={{ marginBottom: "16px", fontSize: "20px" }}>get testnet USDC</h2>
-            <button
-              className="button button-secondary"
-              onClick={handleFaucet}
-              disabled={loading}
-            >
-              {loading ? "requesting..." : "request Faucet (free testnet USDC)"}
-            </button>
-            <p style={{ fontSize: "14px", color: "#666", marginTop: "8px" }}>
-              get free USDC on HyperEVM testnet from Circle's faucet
-            </p>
-            {faucetSuccess && (
-              <div style={{ 
-                marginTop: "12px", 
-                padding: "12px", 
-                background: "#d4edda", 
-                border: "1px solid #c3e6cb",
-                borderRadius: "8px",
-                fontSize: "14px",
-                color: "#155724"
-              }}>
-                <strong>✅ Faucet successful!</strong>
-                <div style={{ marginTop: "8px", fontSize: "12px", fontFamily: "monospace" }}>
-                  <a 
-                    href={`https://sepolia.basescan.org/tx/${faucetSuccess}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#155724", textDecoration: "underline" }}
-                  >
-                    view transaction on Basescan →
-                  </a>
-                </div>
-                <p style={{ marginTop: "8px", fontSize: "13px" }}>
-                  USDC will arrive in a few seconds - your balance will update automatically
-                </p>
+            
+            <div style={{ marginBottom: "12px", padding: "12px", background: "#f8f9fa", borderRadius: "8px" }}>
+              <p style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>
+                your wallet address:
+              </p>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="text"
+                  value={address}
+                  readOnly
+                  style={{ 
+                    flex: 1,
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    border: "1px solid #ddd",
+                    fontFamily: "monospace",
+                    fontSize: "12px",
+                    background: "white"
+                  }}
+                />
+                <button
+                  className="button button-secondary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(address || "");
+                    alert("address copied!");
+                  }}
+                  style={{ padding: "8px 16px", margin: 0, width: "auto" }}
+                >
+                  copy
+                </button>
               </div>
-            )}
+            </div>
+
+            <button
+              className="button button-primary"
+              onClick={() => window.open("https://faucet.circle.com/", "_blank")}
+              style={{ marginBottom: "8px" }}
+            >
+              open Circle faucet →
+            </button>
+            <p style={{ fontSize: "13px", color: "#666", lineHeight: "1.5" }}>
+              1. click above to open Circle's faucet<br />
+              2. select "HyperEVM Testnet"<br />
+              3. paste your address (copy button above)<br />
+              4. claim USDC & return here
+            </p>
           </div>
 
           <div className="action-section">
@@ -481,7 +450,7 @@ export default function Home() {
             </button>
             {parseFloat(balance) < 0.01 && (
               <div className="info-box">
-                you need at least 0.01 USDC to call the API - use the faucet above!
+                you need at least 0.01 USDC to call the API - use the faucet above
               </div>
             )}
           </div>
@@ -522,168 +491,20 @@ export default function Home() {
         </>
       )}
 
-      <div className="steps">
-        <h3>how x402 works:</h3>
-        <ol>
-          <li>
-            <strong>user clicks "Get Motivational Quote"</strong>
-          </li>
-          
-          <li>
-            <strong>client makes request to <code>/motivate</code> endpoint</strong>
-            <pre style={{ fontSize: "12px", background: "white", padding: "8px", borderRadius: "4px", marginTop: "8px", overflow: "auto" }}>
-{`GET http://localhost:3001/motivate`}
-            </pre>
-          </li>
-          
-          <li>
-            <strong>server responds with <code>402 Payment Required</code></strong>
-            <details style={{ marginTop: "8px" }}>
-              <summary style={{ cursor: "pointer", color: "#0052ff" }}>view 402 response →</summary>
-              <pre style={{ fontSize: "11px", background: "white", padding: "8px", borderRadius: "4px", marginTop: "8px", overflow: "auto" }}>
-{`HTTP/1.1 402 Payment Required
-Content-Type: application/json
-
-{
-  "scheme": "exact",
-  "network": "base-sepolia",
-  "maxAmountRequired": "10000",
-  "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-  "payTo": "0xYourReceiverAddress",
-  "resource": "http://localhost:3001/motivate",
-  "description": "Get a motivational quote",
-  "extra": {
-    "gasLimit": "200000"
-  }
-}`}
-              </pre>
-            </details>
-          </li>
-          
-          <li>
-            <strong>client creates and signs payment transaction</strong>
-            <details style={{ marginTop: "8px" }}>
-              <summary style={{ cursor: "pointer", color: "#0052ff" }}>view technical details →</summary>
-              <div style={{ fontSize: "13px", marginTop: "8px", lineHeight: "1.6" }}>
-                <p>Uses <strong>EIP-3009 transferWithAuthorization</strong>:</p>
-                <ul style={{ marginLeft: "20px", marginTop: "8px" }}>
-                  <li>creates USDC transfer authorization (0.01 USDC = 10,000 units)</li>
-                  <li>sets <code>from</code> (your wallet) and <code>to</code> (receiver)</li>
-                  <li>adds <code>validBefore</code> timestamp (expiration)</li>
-                  <li>generates unique <code>nonce</code> (prevents replay attacks)</li>
-                  <li>signs with your CDP Embedded Wallet private key</li>
-                  <li>no gas needed - facilitator sponsors the transaction</li>
-                </ul>
-              </div>
-            </details>
-          </li>
-          
-          <li>
-            <strong>client retries request with <code>X-PAYMENT</code> header</strong>
-            <details style={{ marginTop: "8px" }}>
-              <summary style={{ cursor: "pointer", color: "#0052ff" }}>view payment header →</summary>
-              <pre style={{ fontSize: "11px", background: "white", padding: "8px", borderRadius: "4px", marginTop: "8px", overflow: "auto" }}>
-{`GET http://localhost:3001/motivate
-X-PAYMENT: base64_encoded_json
-
-Decoded X-PAYMENT:
-{
-  "x402Version": 1,
-  "scheme": "exact",
-  "network": "base-sepolia",
-  "payload": {
-    "signature": "0xabc123...",
-    "authorization": {
-      "from": "0xYourWalletAddress",
-      "to": "0x036CbD...USDC",
-      "value": "10000",
-      "validAfter": "0",
-      "validBefore": "1731362400",
-      "nonce": "0xdef456..."
-    }
-  }
-}`}
-              </pre>
-            </details>
-          </li>
-          
-          <li>
-            <strong>server verifies payment using CDP facilitator</strong>
-            <details style={{ marginTop: "8px" }}>
-              <summary style={{ cursor: "pointer", color: "#0052ff" }}>view facilitator call →</summary>
-              <pre style={{ fontSize: "11px", background: "white", padding: "8px", borderRadius: "4px", marginTop: "8px", overflow: "auto" }}>
-{`POST https://api.cdp.coinbase.com/platform/v2/x402/verify
-Authorization: Bearer <JWT_from_CDP_API_KEY>
-Content-Type: application/json
-
-{
-  "x402Version": 1,
-  "paymentPayload": { /* X-PAYMENT data */ },
-  "paymentRequirements": { /* from 402 response */ }
-}
-
-Response:
-{
-  "isValid": true,
-  "payer": "0xYourWalletAddress"
-}`}
-              </pre>
-              <p style={{ fontSize: "13px", marginTop: "8px" }}>
-                the server uses its CDP API key to authenticate with the facilitator, which verifies the signature and checks that the payment matches requirements
-              </p>
-            </details>
-          </li>
-          
-          <li>
-            <strong>Facilitator settles payment on HyperEVM testnet</strong>
-            <details style={{ marginTop: "8px" }}>
-              <summary style={{ cursor: "pointer", color: "#0052ff" }}>view settlement →</summary>
-              <div style={{ fontSize: "13px", marginTop: "8px", lineHeight: "1.6" }}>
-                <p>Facilitator calls USDC contract's <code>transferWithAuthorization</code>:</p>
-                <ul style={{ marginLeft: "20px", marginTop: "8px" }}>
-                  <li>submits your signed authorization to the blockchain</li>
-                  <li>Facilitator pays the gas fees (not you!)</li>
-                  <li>USDC transfers from your wallet to receiver</li>
-                  <li>transaction confirms on Base</li>
-                  <li>returns transaction hash to server</li>
-                </ul>
-              </div>
-            </details>
-          </li>
-          
-          <li>
-            <strong>server returns the protected content</strong>
-            <details style={{ marginTop: "8px" }}>
-              <summary style={{ cursor: "pointer", color: "#0052ff" }}>view response →</summary>
-              <pre style={{ fontSize: "11px", background: "white", padding: "8px", borderRadius: "4px", marginTop: "8px", overflow: "auto" }}>
-{`HTTP/1.1 200 OK
-Content-Type: application/json
-X-PAYMENT-RESPONSE: base64_encoded_json
-
-{
-  "quote": "Work hard, have fun, make history.",
-  "timestamp": "2025-11-11T21:45:00.000Z",
-  "paid": true
-}
-
-Decoded X-PAYMENT-RESPONSE:
-{
-  "success": true,
-  "transaction": "0x789abc...",
-  "network": "base-sepolia",
-  "payer": "0xYourWalletAddress"
-}`}
-              </pre>
-            </details>
-          </li>
-          
-          <li>
-            <strong>user sees the quote and payment confirmation</strong>
-            <p style={{ fontSize: "13px", marginTop: "8px" }}>
-              click the transaction hash to view it on Basescan and see the actual onchain payment
-            </p>
-          </li>
-        </ol>
+      <div className="steps" style={{ marginTop: "32px" }}>
+        <h3>about this demo:</h3>
+        <p style={{ fontSize: "14px", lineHeight: "1.6", color: "#666" }}>
+          this demo showcases <strong>HyperPay</strong> - the first x402 payment facilitator for HyperEVM
+        </p>
+        <ul style={{ fontSize: "14px", lineHeight: "1.8", color: "#666", marginTop: "12px", listStyle: "none", paddingLeft: "0" }}>
+          <li>sign in to get a CDP Embedded Wallet</li>
+          <li>get testnet USDC from Circle's faucet</li>
+          <li>call x402-enabled APIs with automatic payment on HyperEVM</li>
+          <li>no gas fees - HyperPay facilitator sponsors gas in HYPE</li>
+        </ul>
+        <p style={{ fontSize: "13px", marginTop: "16px", color: "#888" }}>
+          built for the HyperEVM Hackathon • <a href="https://github.com/jnix2007/hyperpay" target="_blank" rel="noopener noreferrer" style={{ color: "#0052ff" }}>GitHub →</a>
+        </p>
       </div>
     </div>
   );
